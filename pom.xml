@@ -74,14 +74,14 @@
                 <configuration>
                     <argLine>
                         -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
+                        -Dallure.results.directory=${project.build.directory}/allure-results
                     </argLine>
-                    <systemProperties>
+                    <properties>
                         <property>
-                            <name>allure.results.directory</name>
-                            <value>${project.build.directory}/allure-results</value>
+                            <name>listener</name>
+                            <value>io.qameta.allure.junit4.AllureJunit4</value>
                         </property>
-                    </systemProperties>
-                    <!-- Если нужно игнорировать неудачные тесты при генерации отчёта -->
+                    </properties>
                     <testFailureIgnore>false</testFailureIgnore>
                 </configuration>
                 <dependencies>
