@@ -1,29 +1,24 @@
 package stellarburgers.tests;
 
-import io.qameta.allure.Step;
 import io.qameta.allure.Description;
+import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
-import org.apache.commons.lang3.RandomStringUtils;
+import net.datafaker.Faker;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import stellarburgers.client.UserClient;
 import stellarburgers.model.User;
 import stellarburgers.model.UserCredentials;
 import stellarburgers.utils.UserGenerator;
 
 import static org.hamcrest.Matchers.*;
 
-public class UserUpdateTest {
+public class UserUpdateTest extends BaseTest {
 
-    private UserClient userClient;
+    private static final Faker faker = new Faker();
+
     private String createdUserToken;
     private User createdUser;
-
-    @Before
-    public void setUp() {
-        userClient = new UserClient();
-    }
 
     @After
     public void tearDown() {
@@ -31,14 +26,6 @@ public class UserUpdateTest {
             userClient.deleteUser(createdUserToken)
                     .statusCode(202);
         }
-    }
-
-    @Step("Регистрация пользователя: {user}")
-    private String registerUser(User user) {
-        return userClient.register(user)
-                .statusCode(200)
-                .extract()
-                .path("accessToken");
     }
 
     @Step("Получение данных пользователя (проверка токена)")
@@ -62,14 +49,14 @@ public class UserUpdateTest {
 
     @Test
     @DisplayName("Изменение email с авторизацией")
-    @Description("Проверяем, что авторизованный пользователь может изменить email. Ожидаем код 200 и обновлённые данные.")
+    @Description("Авторизованный пользователь может изменить email.")
     public void testUpdateEmailWithAuth() {
         createdUser = UserGenerator.getRandomUser();
         createdUserToken = registerUser(createdUser);
 
         getUser(createdUserToken);
 
-        String newEmail = "new" + RandomStringUtils.randomAlphabetic(5).toLowerCase() + "@example.com";
+        String newEmail = faker.internet().emailAddress();
         User updatedData = new User();
         updatedData.setEmail(newEmail);
 
@@ -82,7 +69,7 @@ public class UserUpdateTest {
 
     @Test
     @DisplayName("Изменение имени с авторизацией")
-    @Description("Авторизованный пользователь меняет имя. Ожидаем успех.")
+    @Description("Авторизованный пользователь меняет имя.")
     public void testUpdateNameWithAuth() {
         createdUser = UserGenerator.getRandomUser();
         createdUserToken = registerUser(createdUser);
@@ -104,7 +91,7 @@ public class UserUpdateTest {
         createdUser = UserGenerator.getRandomUser();
         createdUserToken = registerUser(createdUser);
 
-        String newPassword = "newPass123";
+        String newPassword = faker.internet().password();
         User updatedData = new User();
         updatedData.setPassword(newPassword);
 
@@ -112,13 +99,12 @@ public class UserUpdateTest {
                 .statusCode(200)
                 .body("success", is(true));
 
-        // Проверяем логин с новым паролем
         login(createdUser.getEmail(), newPassword, 200);
     }
 
     @Test
     @DisplayName("Изменение данных без авторизации")
-    @Description("Пытаемся обновить данные, не передавая токен. Ожидаем код 401.")
+    @Description("Пытаемся обновить данные, не передавая токен.")
     public void testUpdateWithoutAuth() {
         User user = UserGenerator.getRandomUser();
         User updatedData = new User();
@@ -137,8 +123,8 @@ public class UserUpdateTest {
         createdUser = UserGenerator.getRandomUser();
         createdUserToken = registerUser(createdUser);
 
-        String newEmail = "combined" + RandomStringUtils.randomAlphabetic(5).toLowerCase() + "@example.com";
-        String newName = "CombinedName" + RandomStringUtils.randomAlphabetic(3);
+        String newEmail = faker.internet().emailAddress();
+        String newName = faker.name().firstName();
 
         User updatedData = new User();
         updatedData.setEmail(newEmail);

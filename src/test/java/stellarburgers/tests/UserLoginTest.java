@@ -1,28 +1,25 @@
 package stellarburgers.tests;
 
-import io.qameta.allure.Step;
 import io.qameta.allure.Description;
+import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import stellarburgers.client.UserClient;
 import stellarburgers.model.User;
 import stellarburgers.model.UserCredentials;
-import stellarburgers.utils.UserGenerator;
 import stellarburgers.utils.Constants;
+import stellarburgers.utils.UserGenerator;
 
 import static org.hamcrest.Matchers.*;
 
-public class UserLoginTest {
+public class UserLoginTest extends BaseTest {
 
-    private UserClient userClient;
     private String createdUserToken;
     private User createdUser;
 
     @Before
     public void setUp() {
-        userClient = new UserClient();
         createdUser = UserGenerator.getRandomUser();
         createdUserToken = registerUser(createdUser);
     }
@@ -35,14 +32,6 @@ public class UserLoginTest {
         }
     }
 
-    @Step("Регистрация пользователя: {user}")
-    private String registerUser(User user) {
-        return userClient.register(user)
-                .statusCode(200)
-                .extract()
-                .path("accessToken");
-    }
-
     @Step("Логин с учётными данными: {credentials}")
     private void login(UserCredentials credentials, int expectedStatusCode) {
         userClient.login(credentials)
@@ -51,7 +40,7 @@ public class UserLoginTest {
 
     @Test
     @DisplayName("Логин под существующим пользователем")
-    @Description("Проверяем успешный вход с правильными email и password. Ожидаем код 200 и токены.")
+    @Description("Проверяем успешный вход с правильными email и password.")
     public void testLoginExistingUser() {
         UserCredentials credentials = new UserCredentials(createdUser.getEmail(), createdUser.getPassword());
         userClient.login(credentials)
@@ -65,7 +54,7 @@ public class UserLoginTest {
 
     @Test
     @DisplayName("Логин с неверным паролем")
-    @Description("Пароль не совпадает с зарегистрированным. Ожидаем код 401.")
+    @Description("Пароль не совпадает с зарегистрированным.")
     public void testLoginWithWrongPassword() {
         UserCredentials credentials = new UserCredentials(createdUser.getEmail(), "wrongPassword");
         login(credentials, 401);
@@ -73,7 +62,7 @@ public class UserLoginTest {
 
     @Test
     @DisplayName("Логин с неверным email")
-    @Description("Email не существует. Ожидаем код 401.")
+    @Description("Email не существует.")
     public void testLoginWithWrongEmail() {
         UserCredentials credentials = new UserCredentials("nonexistent@mail.ru", createdUser.getPassword());
         login(credentials, 401);
@@ -81,7 +70,7 @@ public class UserLoginTest {
 
     @Test
     @DisplayName("Логин с пустым email")
-    @Description("Поле email не передано. Ожидаем код 401.")
+    @Description("Поле email не передано.")
     public void testLoginWithEmptyEmail() {
         UserCredentials credentials = new UserCredentials(null, createdUser.getPassword());
         login(credentials, 401);
